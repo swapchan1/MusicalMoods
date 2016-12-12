@@ -1,0 +1,480 @@
+<!DOCTYPE html >
+<html >
+<head>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <title>songs</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://rawgit.com/tpreusse/radar-chart-d3/master/src/radar-chart.css">
+
+    <style>
+        
+        .radar-chart .area {
+            fill-opacity: 0.7;
+        }
+        .radar-chart.focus .area {
+            fill-opacity: 0.3;
+        }
+        .radar-chart.focus .area.focused {
+            fill-opacity: 0.9;
+        }
+        .area.germany, .germany .circle {
+            fill: #FFD700;
+            stroke: none;
+        }
+        .area.argentina, .argentina .circle {
+            fill: #ADD8E6;
+            stroke: none;
+        }
+
+    .wrapper {
+    position: relative;
+}
+.wrapper {
+    width: 960px;
+    margin: 0 auto;
+}
+.navbar li a {
+    padding: 20px 10px 15px 10px;
+    font-size: 18px;
+    display: block;
+    color: #337ab7;
+}
+.pull-left {
+    float: left!important;
+}
+h1 {
+    font-size: 23px;
+    color: #000;
+}
+.pull-right {
+    float: right!important;
+}
+.navbar ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+.navbar li {
+    display: inline-block;
+}
+    </style>
+    <style>
+        .chart {
+
+        }
+
+        .main text {
+            font: 10px sans-serif;
+        }
+
+        .axis line, .axis path {
+            shape-rendering: crispEdges;
+            stroke: black;
+            fill: none;
+        }
+
+        circle {
+            fill: steelblue;
+        }
+        .tooltip{
+            background-color:#122b40;
+            border-radius: 3px;
+            color:white;
+        }
+    </style>
+</head>
+<body >
+    <div class="container">
+        <div class="row" style="border-bottom: 1px solid #999; margin-bottom: 20px">
+        <h1 class="pull-left">Musical Moods</h1>
+        <nav class="navbar pull-right" style="margin-bottom: 0">
+            <ul>
+                <li><a href="index.html">Music & Moods</a></li>
+                <li><a href="documentation.html">Documentation</a></li>
+
+            </ul>
+        </nav>
+
+        </div>
+    </div>
+        <div class="content">
+            <div>
+                <button id="go">Go!</button>
+            </div>
+<div id="mainbody" class="hidden" style="margin:0 auto">
+    <h5 style="margin-left: 40px">Valence and Energy Mapping of 100 Songs</h5>
+    <svg id="test1" width="500" height="600"></svg>
+
+    <svg id="test2" width="450" height="400"></svg>
+    <p>
+        This graph shows the distribution of emotions present in the song. It will also help to compare two or more songs.
+    </p>
+    <div>
+        <button id="playbutton">play/pause</button>
+    </div>
+    <svg id="main" width="1050" height="250"></svg>
+</div>
+<audio class="hidden" id="r0audio" class="audioDemo" controls >
+
+    <source src="7.mp3" type="audio/mpeg">
+    <source src="8.mp3" type="audio/mpeg">
+    <source src="6.mp3" type="audio/mpeg">
+    <source src="4.mp3" type="audio/mpeg">
+    <source src="3.mp3" type="audio/mpeg">
+    <source src="2.mp3" type="audio/mpeg">
+    <source src="1.mp3" type="audio/mpeg">
+    <source src="5.mp3" type="audio/mpeg">
+</audio>
+<script src="js/PapaParse-4.1.2/papaparse.min.js"></script>
+<script src="js/jquery-3.1.0.min.js"></script>
+<script src="js/d3.v3.min.js" charset="utf-8"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/visuals.js"></script>
+<script src="https://rawgit.com/tpreusse/radar-chart-d3/master/src/radar-chart.js"></script>
+<script>
+    var moods=[
+            ["Happy",(0.9+1)/2,(0.15+1)/2,"blue"],
+            ["Satisfied",(0.76+1)/2,(-0.63+1)/2,"lightblue"],
+            ["Bored",(-0.34+1)/2,(-0.79+1)/2,"brown"],
+            ["Sad",(-0.82+1)/2,(-0.4+1)/2,"maroon"],
+            ["Distressed",(-0.71+1)/2,(0.55+1)/2,"lightgreen"],
+            ["Tensed",(-0.2+1)/2,(0.85+1)/2,"darkgreen"]
+
+    ];
+    var c = [];
+    var dataRadar = [
+        {
+            className: 'germany', // optional can be used for styling
+            axes: [
+                {axis: "Happy", value: 0.616},
+                {axis: "Satisfied", value: 1},
+                {axis: "Bored", value: 0.769},
+                {axis: "Sad", value: 0.765},
+                {axis: "Distressed", value: 0.946},
+                {axis: "Tensed", value: 0.97}
+            ]
+        },
+        {
+            className: 'argentina',
+            axes: [
+                {axis: "Happy", value: 1},
+                {axis: "Satisfied", value: 0.773},
+                {axis: "Bored", value: 0.287},
+                {axis: "Sad", value: 0.024},
+                {axis: "Distressed", value: 0.481},
+                {axis: "Tensed", value: 0.691}
+            ]
+        }
+    ];
+    $("#go").click(function() {
+        d3.select('#mainbody')
+                .classed("hidden",false);
+        Papa.parse('myDir/1.csv', {
+
+            download: true,
+            header: true,
+            dynamicTyping: true,
+            complete: function(dataBig){
+drawScatter(dataBig.data)
+            }
+        });
+        drawRadar();
+
+        // many radars
+
+        v = new visualmusic(currentRenderer);
+
+    });
+var drawScatter = function(dataFinal){
+    var margin = {top: 20, right: 200, bottom: 60, left: 60}
+            , width = 800 - margin.left - margin.right
+            , height = 400 - margin.top - margin.bottom;
+
+    var x = d3.scale.linear()
+            .domain([0, 1000])
+            .range([ 0, width ]);
+
+    var y = d3.scale.linear()
+            .domain([0, 1000])
+            .range([ height, 0 ]);
+
+    var chart = d3.select('#test1')
+            .attr('width', width + margin.right + margin.left)
+            .attr('height', height + margin.top + margin.bottom)
+            .attr('class', 'chart')
+
+    var main = chart.append('g')
+            .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+            .attr('width', width)
+            .attr('height', height)
+            .attr('class', 'main')
+
+    // draw the x axis
+    var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient('bottom');
+    var tooltip = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+    main.append('g')
+            .attr('transform', 'translate(0,' + height + ')')
+            .attr('class', 'main axis date')
+            .call(xAxis);
+
+    // draw the y axis
+    var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient('left');
+
+    main.append('g')
+            .attr('transform', 'translate(0,0)')
+            .attr('class', 'main axis date')
+            .call(yAxis);
+
+    var g = main.append("svg:g");
+
+    g.selectAll("scatter-dots")
+            .data(dataFinal)
+            .enter().append("svg:circle")
+            .attr("cx", function (d,i) {
+                //console.log(x(d.Valence*1000));
+                return x(d.Valence*1000);
+            } )
+            .attr("cy", function (d) {
+                //console.log(y(d.Energy*1000));
+                return y(d.Energy*1000);
+            } )
+            .attr("r", 6)
+            .on("mouseover", function(d) {
+                tooltip.transition()
+                        .duration(200)
+                        .style("opacity", .9);
+                tooltip.html(d.Song + "<br/> (" + d.Artist + ")")
+                        .style("left", (d3.event.pageX + 5) + "px")
+                        .style("top", (d3.event.pageY - 28) + "px");
+            })
+            .on("mouseout", function(d) {
+                tooltip.transition()
+                        .duration(500)
+                        .style("opacity", 0);
+            })
+            .on("mousedown",function(d){
+                var c = [];
+                moods.forEach(function(elem){
+                    var n = Math.sqrt(Math.pow( Math.abs( elem[1] - d.Valence),2)+ Math.pow( Math.abs( elem[2] - d.Energy),2));
+                    c.push(1-n);
+                });
+                dataRadar.push({className: d.Song,
+                    axes:[
+                        {axis: "Happy", value: c[0]},
+                        {axis: "Satisfied", value: c[1]},
+                        {axis: "Bored", value: c[2]},
+                        {axis: "Sad", value: c[3]},
+                        {axis: "Distressed", value: c[4]},
+                        {axis: "Tensed", value: c[5]}
+                    ]
+                });
+                console.log(dataRadar);
+                drawRadar();
+            });
+};
+    var drawRadar = function(){
+        var chart = RadarChart.chart();
+        var cfg = chart.config(); // retrieve default config
+        var svg = d3.select('#test2')
+                .attr('width', cfg.w )
+                .attr('height', cfg.h);
+        svg.append('g')
+                .classed('single', 1)
+                .datum(dataRadar)
+                .call(chart);
+    };
+
+    RadarChart.defaultConfig.color = function() {};
+    RadarChart.defaultConfig.radius = 3;
+    RadarChart.defaultConfig.w = window.innerWidth*0.30;
+    RadarChart.defaultConfig.h = 400;
+</script>
+<!--<script>
+    var i = 0;
+    var data;
+    var finalData=[];
+    Papa.parse('songs.csv', {
+
+        download: true,
+        header: true,
+        dynamicTyping: true,
+        complete: function(dataBig){
+            data = dataBig.data;
+            console.log(dataBig.data);
+            get_data(0);
+        }
+    });
+    var get_data = function(i){
+        $.ajax({
+            //url: "http://api.musicmood.me/mood/" + encodeURIComponent("ADELE") + "/" + encodeURIComponent("HELLO") + "/",
+            url: "http://api.musicmood.me/get_song/",
+            type:"POST",
+            data:{song: data[i].Song,artist:data[i].Artist},
+            success: function(songdata) {
+
+                console.log(data[i].Artist + ", " + data[i].Song);
+                console.log(songdata);
+                //console.log(i+"%");
+                var v = data[i].Song+","+data[i].Artist+","+data[i].Genre+","+songdata.mood.valence+","+songdata.mood.energy+","+songdata.mood.mood;
+
+                finalData.push(v);
+                if(i<99)
+                    get_data(i+1);
+                else
+                {
+                    console.log(finalData);
+                    $.ajax({
+                            url: "collect.php",
+                            type: "POST",
+                            contentType: "application/x-www-form-urlencoded",
+                            data: {"json_string": JSON.stringify(finalData)},
+                            success:function(){
+                                console.log("done");
+                            }
+                    });
+                }
+
+            },
+            error: function(errordata){
+                console.log(errordata);
+            }
+        });
+    }
+</script>-->
+<!--<script>
+    var margin = {top: 20, right: 20, bottom: 30, left: 40},
+            width = 960 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
+
+    /*
+     * value accessor - returns the value to encode for a given data object.
+     * scale - maps value to a visual display encoding, such as a pixel position.
+     * map function - maps from data value to display value
+     * axis - sets up axis
+     */
+
+    // setup x
+    var xValue = function(d) { return d.Calories;}, // data -> value
+            xScale = d3.scale.linear().range([0, width]), // value -> display
+            xMap = function(d) { return xScale(xValue(d));}, // data -> display
+            xAxis = d3.svg.axis().scale(xScale).orient("bottom");
+
+    // setup y
+    var yValue = function(d) { return d["Protein (g)"];}, // data -> value
+            yScale = d3.scale.linear().range([height, 0]), // value -> display
+            yMap = function(d) { return yScale(yValue(d));}, // data -> display
+            yAxis = d3.svg.axis().scale(yScale).orient("left");
+
+    // setup fill color
+    var cValue = function(d) { return d.Manufacturer;},
+            color = d3.scale.category10();
+
+    // add the graph canvas to the body of the webpage
+    var svg = d3.select("body").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    // add the tooltip area to the webpage
+    var tooltip = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
+    // load data
+    d3.csv("cereal.csv", function(error, data) {
+
+        // change string (from CSV) into number format
+        data.forEach(function(d) {
+            d.Calories = +d.Calories;
+            d["Protein (g)"] = +d["Protein (g)"];
+//    console.log(d);
+        });
+
+        // don't want dots overlapping axis, so add in buffer to data domain
+        xScale.domain([d3.min(data, xValue)-1, d3.max(data, xValue)+1]);
+        yScale.domain([d3.min(data, yValue)-1, d3.max(data, yValue)+1]);
+
+        // x-axis
+        svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + height + ")")
+                .call(xAxis)
+                .append("text")
+                .attr("class", "label")
+                .attr("x", width)
+                .attr("y", -6)
+                .style("text-anchor", "end")
+                .text("Calories");
+
+        // y-axis
+        svg.append("g")
+                .attr("class", "y axis")
+                .call(yAxis)
+                .append("text")
+                .attr("class", "label")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 6)
+                .attr("dy", ".71em")
+                .style("text-anchor", "end")
+                .text("Protein (g)");
+
+        // draw dots
+        svg.selectAll(".dot")
+                .data(data)
+                .enter().append("circle")
+                .attr("class", "dot")
+                .attr("r", 3.5)
+                .attr("cx", xMap)
+                .attr("cy", yMap)
+                .style("fill", function(d) { return color(cValue(d));})
+                .on("mouseover", function(d) {
+                    tooltip.transition()
+                            .duration(200)
+                            .style("opacity", .9);
+                    tooltip.html(d["Cereal Name"] + "<br/> (" + xValue(d)
+                                    + ", " + yValue(d) + ")")
+                            .style("left", (d3.event.pageX + 5) + "px")
+                            .style("top", (d3.event.pageY - 28) + "px");
+                })
+                .on("mouseout", function(d) {
+                    tooltip.transition()
+                            .duration(500)
+                            .style("opacity", 0);
+                });
+
+        // draw legend
+        var legend = svg.selectAll(".legend")
+                .data(color.domain())
+                .enter().append("g")
+                .attr("class", "legend")
+                .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+        // draw legend colored rectangles
+        legend.append("rect")
+                .attr("x", width - 18)
+                .attr("width", 18)
+                .attr("height", 18)
+                .style("fill", color);
+
+        // draw legend text
+        legend.append("text")
+                .attr("x", width - 24)
+                .attr("y", 9)
+                .attr("dy", ".35em")
+                .style("text-anchor", "end")
+                .text(function(d) { return d;})
+    });
+</script>-->
+</div>
+
+</body>
+</html>

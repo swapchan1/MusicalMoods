@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+<body>
+
+<div class="container" >
+    <div class="row"style="height: 20vh;text-align: center;padding-top: 8vh;">
+        <h2>Musical Moods</h2>
+    </div>
+
+    <div class="row" style="text-align: center; width: 40vw;margin: auto;">
+        <div style="border: solid black;padding-top: 4vh;padding-bottom:4vh;border-radius: 30px">
+            <h3>Translate your mood to music</h3>
+        </div>
+    </div>
+
+    <div class="row" style=" width: 40vw;margin: auto;margin-top: 20px;">
+        <div style="border: solid black;padding-top: 4vh;padding-bottom:4vh;border-radius: 30px">
+            <div style="text-align: center;">A Data Visualization Project by:</div>
+            <br/>
+            <ul style="list-style-type: none;margin-left: 11vw;">
+                <li>Anurag Goyal</li>
+                <li>Jessica Despard</li>
+                <li>Onkar Borgaonkar</li>
+                <li>Swapnil Chandra</li>
+            </ul>
+        </div>
+    </div>
+    <div class="row" style="text-align: center; width: 40vw; margin: auto;margin-top: 20px;">
+        <div class="btn-group" role="group" aria-label="Basic example">
+            <button id="songs" class="btn btn-default">Song Picker</button>
+            <button id="docs" class="btn btn-default">Documentation</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/PapaParse-4.1.2/papaparse.min.js"></script>
+<script src="js/jquery-3.1.0.min.js"></script>
+<script src="js/d3.v3.min.js" charset="utf-8"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/visuals.js"></script>
+<script src="https://rawgit.com/tpreusse/radar-chart-d3/master/src/radar-chart.js"></script>
+<script>
+    $("#songs").click(function(){
+        location.href='main.html';
+    });
+    $("#docs").click(function(){
+        location.href='documentation.html';
+    });
+</script>
+</body>
+</html>

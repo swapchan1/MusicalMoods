@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>D3 Music Moods Visualisation</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+<style>
+    
+    .wrapper {
+    position: relative;
+}
+.wrapper {
+    width: 960px;
+    margin: 0 auto;
+}
+.navbar li a {
+    padding: 20px 10px 15px 10px;
+    font-size: 18px;
+    display: block;
+    color: #337ab7;
+}
+.pull-left {
+    float: left!important;
+}
+h1 {
+    font-size: 23px;
+    color: #000;
+}
+.pull-right {
+    float: right!important;
+}
+.navbar ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+.navbar li {
+    display: inline-block;
+}
+
+</style>
+<body>
+
+<div class="container">
+        <div class="wrapper">
+
+                <div class="row" style="border-bottom: 1px solid #999; margin-bottom: 20px">
+                    <h1 class="pull-left">H590 Interactive Visual Analytics</h1>
+                    <nav class="navbar pull-right" style="margin-bottom: 0">
+                        <ul>
+                            <li><a href="index.html">Music & Moods</a></li>
+                            <li><a href="documentation.html">Documentation</a></li>
+                           
+                        </ul>
+                    </nav>
+                
+                </div>
+
+
+                <div class="content">
+                    <h2>Music and Moods</h2>
+                    <div style="text-align: center;margin-bottom:30px">
+                        <img src="http://www.lucreid.com/wp-content/uploads/2009/10/music.jpg" style="text-align: center;">
+                    </div>
+
+
+
+                    <p>Do you ever listen to specific song or band when you are sad?</p>
+
+                    <p>Do you ever listen to a certain genre music when you are trying to focus and study for an exam?</p>
+
+                    <p>Have you ever watched a movie without background music? It was probably very boring.</p>
+
+                    <p>Why? Because music evokes moods and emotions.</p>
+                    <p>Try and think of the last time music was not a part of your daily routine. You probably can’t. Why is this?</p>
+
+                    <p style="font-style: italic;">Most people unconsciously like the stimulation music triggers in our minds. Research shows
+
+evidence that certain musical patterns stimulates certain moods and emotions within the brain
+
+.
+
+In particular, complex musical patterns stimulate the same areas of the brain that are
+
+responsible for the pleasure we get from from eating, exercising, drug usage, and the like
+
+.
+
+Since musical patterns are complex though, certain music genres and songs are able to elicit
+
+many different emotions (not just pleasure)
+
+</p>
+                    <h2 style="margin:30px 0">How can music cause emotional reactions?</h2>
+                    <p>Music is composed of several features out of which some of the major components it consists of are:</p>
+                    <ul>
+                            <li>Acousticness</li>
+                            <li>Danceability</li>
+                            <li>Energy/Arousal</li>
+                            <li>Mode</li>
+                            <li>Loudness </li>
+                            <li>Valence </li>
+                            <li>Depth</li>
+                    </ul>
+
+                    <h2 style="margin:30px 0">So which component has impact on your mood?</h2>
+                    <p>The three predominant qualities of a song or musical pattern that are able to do this are: <i>valence, arousal, and depth</i></p>
+                    <ul>
+                            <li><b>Valence (Spectrum of emotions in music): </b>A measure from 0.0 to 1.0 describing the musical positiveness conveyed by a track. Tracks with high valence sound more positive (e.g. happy, cheerful, euphoric), while tracks with low valence sound more negative (e.g. sad, depressed, angry).
+                            </li><br/>
+                            <li><b>Energy/Arousal (Intensity and energy in music):</b>Energy is a measure from 0.0 to 1.0 and represents a perceptual measure of intensity and activity. Typically, energetic tracks feel fast, loud, and noisy. For example, death metal has high energy, while a Bach prelude scores low on the scale. Perceptual features contributing to this attribute include dynamic range, perceived loudness, timbre, onset rate, and general entropy.</li><br/>
+                            <li><b>Depth</b> is defined as the “intellect and sophistication in music”</li>
+                            
+                    </ul>
+
+                    <h2 style="margin-top: 30px">Music and Mood Distribution</h2>
+                    <div style="text-align: center;margin-bottom:10px">
+                    <img style="margin-bottom: 30px;" src="Capture.PNG">
+                    <img src="https://kinesiscem.files.wordpress.com/2015/09/moods.jpg">
+                    </div>
+
+                    <h5 style="font-weight:bold; margin-top: 60px">Resources referred/used</h5>
+                    <ul>
+                        <li>Allaire, V. (2016, May 10). Scientists create a new way to categorize music. Retrieved
+
+December 06, 2016, from
+
+https://www.mcgill.ca/newsroom/channels/news/scientists-create-new-way-categorize-music-26
+
+0798</li>
+                        <li>Blood, A. J., & Zatorre, R. J. (2001). Intensely pleasurable responses to music correlate with
+
+activity in brain regions implicated in reward and emotion. Proceedings of the National Academy
+
+of Sciences, 98(20), 11818-11823.</li>
+                        <li>Greenberg, D. M., Kosinski, M., Stillwell, D. J., Monteiro, B. L., Levitin, D. J., & Rentfrow, P.
+
+J. (2016). The Song Is You Preferences for Musical Attribute Dimensions Reflect Personality.
+
+Social Psychological and Personality Science, 1948550616641473.</li>
+                        <li>Juslin, P. N., & Sloboda, J. A. (2001). Music and emotion: Theory and research. Oxford
+
+University Press.</li>
+                        <li>The Elements Of Music. 1st ed. Unknown.: Western Michigan University. Web. 7 Dec. 2016.</li>
+                        
+                    </ul>
+
+                </div>
+
+
+
+        </div>
+        
+</div>
+
+
+<script src="js/d3.v3.min.js"></script>
+<script src="js/jquery-3.1.0.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/visuals.js"></script>
+
+<script>
+
+</script>
+</body>
+</html>
+
+
+
+ 

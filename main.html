@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://rawgit.com/tpreusse/radar-chart-d3/master/src/radar-chart.css">
+    <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+    <style>
+        .navbar li a {
+            padding: 20px 10px 15px 10px;
+            font-size: 18px;
+            display: block;
+            color: #337ab7;
+        }
+        .pull-left {
+            float: left!important;
+        }
+        h1 {
+            font-size: 23px;
+            color: #000;
+        }
+        .pull-right {
+            float: right!important;
+        }
+        .navbar ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        .navbar li {
+            display: inline-block;
+        }
+        .main text {
+            font: 10px sans-serif;
+        }
+
+        .axis line, .axis path {
+            shape-rendering: crispEdges;
+            stroke: black;
+            fill: none;
+        }
+
+        .tooltip{
+            background-color:#122b40;
+            border-radius: 3px;
+            color:white;
+        }
+        .radar-chart .area {
+            fill-opacity: 0.7;
+        }
+        .radar-chart.focus .area {
+            fill-opacity: 0.3;
+        }
+        .radar-chart.focus .area.focused {
+            fill-opacity: 0.9;
+        }
+        .area.germany, .germany .circle {
+            fill: #FFD700;
+            stroke: none;
+        }
+        .area.argentina, .argentina .circle {
+            fill: #ADD8E6;
+            stroke: none;
+        }
+        .wrapper {
+            position: relative;
+        }
+        .wrapper {
+            width: 960px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row" style="text-align: center;border-bottom: 1px solid #999; margin-bottom: 1.5vh; padding-bottom: 3vh">
+        <h1>Musical Moods</h1>
+    </div>
+    <div class="row" style="margin-bottom: 1.5vh;height:10vh;">
+        <form class="col-xs-9 navbar" style="padding-top: 15px;">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search">
+                <div class="input-group-btn">
+                    <button class="btn btn-default" type="submit">
+                        <i class="glyphicon glyphicon-search"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <nav class="navbar pull-right" style="margin-bottom: 0">
+            <ul>
+                <li><a href="index.html">Music & Moods</a></li>
+                <li><a href="documentation.html">Documentation</a></li>
+
+            </ul>
+        </nav>
+
+    </div>
+
+    <div class="row" style="height: 10vh;">
+        <div style="text-align: center;">
+            <h2>Play the song based on your mood</h2>
+        </div>
+    </div>
+    </div>
+    <div style="height:65vh; border: solid black">
+        <div class="col-md-2" style="height: 100%">
+            <div class="col-md-2 svgOverlap one" style="width:100%; height: 25%; border: solid black 0.1px;background-color: white" ></div>
+            <div class="col-md-2 svgOverlap two" style="width:100%; height: 25%; border: solid black 0.1px;background-color: white" ></div>
+            <div class="col-md-2 svgOverlap three" style="width:100%; height: 25%; border: solid black 0.1px;background-color: white" ></div>
+            <div class="col-md-2 svgOverlap four" style="width:100%; height: 25%; border: solid black 0.1px;background-color: white" ></div>
+        </div>
+        <div class="col-md-6" style="height:100%">
+            <svg id="test1"></svg>
+
+        </div>
+        <div class="col-md-4" style="height:100%;text-align: center;">
+            <h3><p id="songName">Song (Artist)</p></h3>
+            <button class="btn btn-default">Play</button>
+            <input id="compare" type="checkbox" data-toggle="toggle" data-on="Compare" data-off="Single" data-onstyle="success" data-offstyle="primary">
+            <br/>
+            <br/>
+            <svg id="test2"></svg>
+
+        </div>
+    </div>
+<audio class="hidden" id="r0audio" class="audioDemo" controls >
+
+    <source src="7.mp3" type="audio/mpeg">
+    <source src="8.mp3" type="audio/mpeg">
+    <source src="6.mp3" type="audio/mpeg">
+    <source src="4.mp3" type="audio/mpeg">
+    <source src="3.mp3" type="audio/mpeg">
+    <source src="2.mp3" type="audio/mpeg">
+    <source src="1.mp3" type="audio/mpeg">
+    <source src="5.mp3" type="audio/mpeg">
+</audio>
+
+<script src="js/PapaParse-4.1.2/papaparse.min.js"></script>
+<script src="js/jquery-3.1.0.min.js"></script>
+<script src="js/d3.v3.min.js" charset="utf-8"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/visuals.js"></script>
+<script src="https://rawgit.com/tpreusse/radar-chart-d3/master/src/radar-chart.js"></script>
+<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+<script>
+    var select=0;
+    var dataFinal;
+    var clicked = "zero";
+    $(".svgOverlap").click(function(){
+        if(clicked != "zero") {
+            if($(this).hasClass(clicked)){
+                clicked = "zero";
+                    $(this).css("background-color", "white");
+            }
+        }
+        else{
+            if($(this).hasClass("one")){
+                clicked = "one";
+            }
+            if($(this).hasClass("two")){
+                clicked = "two";
+            }
+            if($(this).hasClass("three")){
+                clicked = "three";
+            }
+            if($(this).hasClass("four")){
+                clicked = "four";
+            }
+            $(this).css("background-color", "gray");
+        }
+    });
+    $(".svgOverlap").on("mouseover",function(){
+        //$(this).css("background-color","transparent");
+        if(clicked == "zero") {
+            if ($(this).hasClass("one") == true)
+                select = 1;
+            else if ($(this).hasClass("two") == true)
+                select = 2;
+            else if ($(this).hasClass("three") == true)
+                select = 3;
+            else if ($(this).hasClass("four") == true)
+                select = 4;
+
+            drawScatter(dataFinal);
+        }
+    });
+    $(".svgOverlap").on("mouseout",function(){
+        //$(this).css("background-color","white");
+        if(clicked=="zero") {
+            select = 0;
+            drawScatter(dataFinal);
+        }
+    });
+    $(window).ready(function(){
+        Papa.parse('myDir/2.csv', {
+
+            download: true,
+            header: true,
+            dynamicTyping: true,
+            complete: function (data) {
+                dataFinal = data.data;
+                drawScatter(dataFinal);
+            }
+        });
+    });
+    var drawScatter = function(dataFinal) {
+        var margin = {top: 20, right: 200, bottom: 60, left: 60}
+                , width = $("#test1").parent().width()
+                , height = $("#test1").parent().height();
+
+        var x = d3.scale.linear()
+                .domain([0, 1000])
+                .range([0, width]);
+
+        var y = d3.scale.linear()
+                .domain([0, 1000])
+                .range([height, 0]);
+
+        var chart = d3.select('#test1')
+                .attr('width', width)
+                .attr('height', height)
+                .attr('class', 'chart');
+        chart.selectAll('g').remove();
+        var main = chart.append('g')
+                .attr('transform', 'translate(0,' + margin.top + ')')
+                .attr('width', width)
+                .attr('height', height)
+                .attr('class', 'main');
+
+        var tooltip = d3.select("body").append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0);
+
+        // draw the x axis
+        /*var xAxis = d3.svg.axis()
+                .scale(x)
+                .orient('bottom');
+
+        main.append('g')
+                .attr('transform', 'translate(0,' + height + ')')
+                .attr('class', 'main axis date')
+                .call(xAxis);*/
+
+        // draw the y axis
+        /*var yAxis = d3.svg.axis()
+                .scale(y)
+                .orient('left');
+
+        main.append('g')
+                .attr('transform', 'translate(0,0)')
+                .attr('class', 'main axis date')
+                .call(yAxis);*/
+
+
+
+        main.selectAll("scatter-dots")
+                .data(dataFinal)
+                .enter().append("svg:circle")
+                .attr("cx", function (d, i) {
+                    //console.log(x(d.Valence*1000));
+                    return x(d.Valence * 1000);
+                })
+                .attr("cy", function (d) {
+                    console.log(d.Energy +","+ d.Song);
+                    return y(d.Energy * 1000);
+                })
+                .style("fill",function(d){
+                    if(select == 1){
+                        if(d.Valence < 0.5 && d.Energy > 0.5){
+                            return "red";
+                        }
+                    }
+
+                    if(select == 2){
+                        if(d.Valence > 0.5 && d.Energy > 0.5){
+                            return "green";
+                        }
+                    }
+                    if(select == 3){
+                        if(d.Valence > 0.5 && d.Energy < 0.5){
+                            return "blue";
+                        }
+                    }
+                    if(select == 4){
+                        if(d.Valence < 0.5 && d.Energy < 0.5){
+                            return "yellow";
+                        }
+                    }
+
+                    return "steelblue";
+                })
+                .style("stroke",function(d){
+                    dataRadar.forEach(function(elem){
+                        if(elem.className== d.Song)
+                        return "red";
+                    });
+                })
+                .style("stroke-width",function(d){
+                    dataRadar.forEach(function(elem){
+                        if(elem.className== d.Song)
+                            return 3;
+                    });
+                })
+                .attr("r", 6)
+                .on("mouseover", function (d) {
+                    tooltip.transition()
+                            .duration(200)
+                            .style("opacity", .9);
+                    tooltip.html(d.Song + "<br/> (" + d.Artist + ")")
+                            .style("left", (d3.event.pageX + 5) + "px")
+                            .style("top", (d3.event.pageY - 28) + "px");
+                    /////////////////////////
+                })
+                .on("mouseout", function (d) {
+                    tooltip.transition()
+                            .duration(500)
+                            .style("opacity", 0);
+                    /////////////////////////////
+                })
+                .on("mousedown", function (d) {
+                    tooltip.transition()
+                            .duration(500)
+                            .style("opacity", 0);
+                    var flag1 = 0;
+                    dataRadar.forEach(function (elem) {
+                        if (elem.Song == d.Song) {
+                            flag1 = 1;
+                        }
+                    });
+                    if (flag1 == 0) {
+                        if(!$("#compare").prop('checked') ) {
+                            dataRadar = [];
+                            if (dataRadar.length <= 1) {
+                                var c = [];
+                                d3.select('#songName').text( text_truncate( d.Song,20) + "( "+ d.Artist+ " )");
+                                moods.forEach(function (elem) {
+                                    var n = Math.sqrt(Math.pow(Math.abs(elem[1] - d.Valence), 2) + Math.pow(Math.abs(elem[2] - d.Energy), 2));
+                                    c.push(1 - n);
+                                });
+                                dataRadar.push({
+                                    className: d.Song,
+                                    axes: [
+                                        {axis: "Happy", value: c[0]},
+                                        {axis: "Satisfied", value: c[1]},
+                                        {axis: "Bored", value: c[2]},
+                                        {axis: "Sad", value: c[3]},
+                                        {axis: "Distressed", value: c[4]},
+                                        {axis: "Tensed", value: c[5]}
+                                    ]
+                                });
+
+                                drawRadar();
+                                drawScatter(dataFinal);
+                            }
+                        }
+                        else if (dataRadar.length < 3) {
+                            var c = [];
+                            d3.select('#songName').text( text_truncate( d.Song,20) + "( "+ d.Artist+ " )");
+                            moods.forEach(function (elem) {
+                                var n = Math.sqrt(Math.pow(Math.abs(elem[1] - d.Valence), 2) + Math.pow(Math.abs(elem[2] - d.Energy), 2));
+                                c.push(1 - n);
+                            });
+                            dataRadar.push({
+                                className: d.Song,
+                                axes: [
+                                    {axis: "Happy", value: c[0]},
+                                    {axis: "Satisfied", value: c[1]},
+                                    {axis: "Bored", value: c[2]},
+                                    {axis: "Sad", value: c[3]},
+                                    {axis: "Distressed", value: c[4]},
+                                    {axis: "Tensed", value: c[5]}
+                                ]
+                            });
+
+                            drawRadar();
+                            drawScatter(dataFinal);
+                        }
+                    }
+                });
+    };
+
+    var moods=[
+        ["Happy",(0.9+1)/2,(0.15+1)/2,"blue"],
+        ["Satisfied",(0.76+1)/2,(-0.63+1)/2,"lightblue"],
+        ["Bored",(-0.34+1)/2,(-0.79+1)/2,"brown"],
+        ["Sad",(-0.82+1)/2,(-0.4+1)/2,"maroon"],
+        ["Distressed",(-0.71+1)/2,(0.55+1)/2,"lightgreen"],
+        ["Tensed",(-0.2+1)/2,(0.85+1)/2,"darkgreen"]
+
+    ];
+    var c = [];
+    var dataRadar = [];
+    var drawRadar = function(){
+        var chart = RadarChart.chart();
+        var cfg = chart.config(); // retrieve default config
+        var svg = d3.select('#test2')
+                .attr('width', cfg.w )
+                .attr('height', cfg.h);
+        svg.selectAll('g').remove();
+        svg.append('g')
+                .classed('single', 1)
+                .datum(dataRadar)
+                .call(chart);
+    };
+
+    RadarChart.defaultConfig.color = function() {};
+    RadarChart.defaultConfig.radius = 3;
+    RadarChart.defaultConfig.w = 300;
+    RadarChart.defaultConfig.h = 300;
+    text_truncate = function(str, length, ending) {
+        if (length == null) {
+            length = 100;
+        }
+        if (ending == null) {
+            ending = '...';
+        }
+        if (str.length > length) {
+            return str.substring(0, length - ending.length) + ending;
+        } else {
+            return str;
+        }
+    };
+
+</script>
+</body>
+</html>
