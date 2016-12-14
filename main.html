@@ -222,7 +222,7 @@
         $("#part2").animate({height:"65vh"},1000,function(){$("#part2").css("display","block");});
 
 
-        $("#song2").get(0).innerHTML = $("#song1").get(0).innerHTML;
+        $("#song2").text(selectedSong.Song +"(" + selectedSong.Artist +")");//$("#song1").get(0).innerHTML;
         //$(".songName").innerHTML = selectedSong.Song + "(" + selectedSong.Artist + ")";
         $.ajax({
             url: 'https://api.spotify.com/v1/search?type=track&limit=5&q=' + selectedSong.Song,
@@ -276,17 +276,7 @@
             // No hash found
         }
     });
-    function getParameterByName(name, url) {
-        if (!url) {
-            url = window.location.href;
-        }
-        name = name.replace(/[\[\]]/g, "\\$&");
-        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-                results = regex.exec(url);
-        if (!results) return null;
-        if (!results[2]) return '';
-        return decodeURIComponent(results[2].replace(/\+/g, " "));
-    }
+
     $("#prevpage").click(function(){
         $("#part1").animate({height:"65vh"},1000,function(){$("#part1").css("display","block");});
         $("#part2").animate({height:"0vh"},1000,function(){$("#part2").css("display","none");});
