@@ -115,7 +115,7 @@
 
     <div class="row" style="height: 10vh;">
         <div style="text-align: center;">
-            <h2>Play the song based on your mood</h2><svg class="pull-right" width="300" height="60">
+            <span class="h3" style="text-align: right">Play the song based on your mood</span><svg class="pull-right" width="300" height="60">
             <rect class="hidden" x="10" y="0" height="10" width="10" fill="#FFD700" id="rect0"></rect>
             <text class="hidden" x="35" y="10" id="song0"></text>
             <rect class="hidden" x="10" y="20" height="10" width="10" fill="#ADD8E6" id="rect1"></rect>
@@ -127,7 +127,7 @@
         </div>
     </div>
 </div>
-    <div id="part1" style="height:65vh; border: solid black">
+    <div id="part1" style="height:65vh; border: solid black; border-radius:5px;">
         <div class="col-md-2" style="height: 100%">
             <div class="col-md-2 svgOverlap one" style="width:100%; height: 25%; background-image:url('tensed1.png');background-position: center center; background-size:contain;background-repeat: no-repeat;border: solid black 0.1px;background-color: white" ></div>
             <div class="col-md-2 svgOverlap two" style="width:100%; height: 25%; background-image:url('happy2.png'); background-position: center center;background-size:contain;background-repeat: no-repeat;;border: solid black 0.1px;background-color: white" ></div>
@@ -167,7 +167,10 @@
             <button id="prevpage" class="btn btn-default">Pick Another Song</button>
         </div>
     </div>
-<audio class="hidden" id="r0audio" class="audioDemo" controls >
+<audio class="" id="r0audio" class="audioDemo" controls >
+    <!--<source id="songplaying" src="https://p.scdn.co/mp3-preview/2aa5edf85faa02576576b5d2464fee5c4480ec25.mp3?cid=361a0568e6cf468e80186ea83ee6252f" type="audio/mp3">-->
+    <!--<source src="https://p.scdn.co/mp3-preview/2aa5edf85faa02576576b5d2464fee5c4480ec25?cid=361a0568e6cf468e80186ea83ee6252f" type="audio/mp3">-->
+    <!--<source src="https://p.scdn.co/mp3-preview/2aa5edf85faa02576576b5d2464fee5c4480ec25.mp3" type="audio/mp3">-->
 </audio>
 
 <script src="js/PapaParse-4.1.2/papaparse.min.js"></script>
@@ -212,6 +215,19 @@
         $("#three").css("background-color", "white");
         $("#four").css("background-color", "gray");
     });
+    (function($){
+
+        $.extend({
+            playSound: function(){
+                return $(
+                        '<source src="' + arguments[0] + '.mp3" />'
+                        + '<source src="' + arguments[0] + '.ogg" />'
+                        + '<embed src="' + arguments[0] + '.mp3" hidden="true" autostart="true" loop="false" class="playSound" />'
+                ).appendTo('audio');
+            }
+        });
+
+    })(jQuery);
 
     $("#nextpage").click(function(){
         $("#part1").animate({height:"0vh"},1000,function(){$("#part1").css("display","none");});
@@ -221,29 +237,68 @@
         $("#song2").get(0).innerHTML = $("#song1").get(0).innerHTML;
         //$(".songName").innerHTML = selectedSong.Song + "(" + selectedSong.Artist + ")";
         $.ajax({
-            url: 'https://api.spotify.com/v1/tracks/5oQx6XZyrOOkGbme8DA9GO',
+            url: 'https://api.spotify.com/v1/search?type=track&limit=5&q=' + selectedSong.Song,
             type: 'GET',
             headers: {
                 'Authorization': 'Authorization: Bearer ' + accessToken
             },
             success: function (data1) {
-                $("#r0audio").attr("src","aa.mp3");//data1.preview_url;
-                $("#main").css("margin-top", "20px");
-                $("#main").width(800);
-                $("#main").height(400);
-                v = new visualmusic(currentRenderer);
-                v.start();
+                $.ajax({
+                    url: 'https://api.spotify.com/v1/tracks/'+data1.tracks.items[0].id,
+                    type: 'GET',
+                    headers: {
+                        'Authorization': 'Authorization: Bearer ' + accessToken
+                    },
+                    success: function (data1) {
+                        console.log(data1);
+
+                        //playSound(data1.preview_url);
+                        $("#r0audio").remove();
+                        $('body').append('<audio class="" id="r0audio" class="audioDemo" controls autoplay></audio>');
+                        $("#r0audio").get(0).crossOrigin = "anonymous";
+                        $("#r0audio").append('<source id="songplaying" src="'+data1.preview_url+'" type="audio/mp3"></source>');
+
+                        //$("#songplaying").attr("src",data1.preview_url);//"https://p.scdn.co/mp3-preview/2aa5edf85faa02576576b5d2464fee5c4480ec25?cid=361a0568e6cf468e80186ea83ee6252f" );//data1.preview_url;
+                        $("#main").css("margin-top", "20px");
+                        $("#main").width(800);
+                        $("#main").height(400);
+                        v = new visualmusic(currentRenderer);
+                        v.start();
+                    }
+                });
             }
         });
-
 
 
     });
 
     $(window).ready(function(){
+        /*accessToken = getParameterByName("access_token");
+        alert(accessToken);
+        accessToken = getParameterByName("expires_in");
+        alert(accessToken);*/
+        if(window.location.hash) {
+            var hash = window.location.hash.substring(1); //Puts hash in variable, and removes the # character
+            console.log(hash);
 
+            accessToken =hash.substring(hash.indexOf('=')+1,hash.indexOf('&'));
+            console.log(accessToken);
+            // hash found
+        } else {
+            // No hash found
+        }
     });
-
+    function getParameterByName(name, url) {
+        if (!url) {
+            url = window.location.href;
+        }
+        name = name.replace(/[\[\]]/g, "\\$&");
+        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+                results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, " "));
+    }
     $("#prevpage").click(function(){
         $("#part1").animate({height:"65vh"},1000,function(){$("#part1").css("display","block");});
         $("#part2").animate({height:"0vh"},1000,function(){$("#part2").css("display","none");});
@@ -605,7 +660,7 @@ var radarClasses = ["radarOne","radarTwo","radarThree"];
 </script>
 <script>
     var recentlyadded;
-    var accessToken = "BQBdCZR5_jDE5DFSQuzAoKaLn33FMzvyAWEY1LAX5zD78-SJB3IuhQnzibwp8WMutrEIDi4ySfR7kj96zQ6VpS5kDJ9l64fH5RkYzAzldoE-swgVNQiM1Q2TsOKYd-3QNRacvxHrWw"
+    var accessToken = //"BQBdCZR5_jDE5DFSQuzAoKaLn33FMzvyAWEY1LAX5zD78-SJB3IuhQnzibwp8WMutrEIDi4ySfR7kj96zQ6VpS5kDJ9l64fH5RkYzAzldoE-swgVNQiM1Q2TsOKYd-3QNRacvxHrWw"
     $("#tracksearch").on("change",function() {
         console.log($("#tracksearch").get(0).value);
         $.ajax({
@@ -641,8 +696,8 @@ var radarClasses = ["radarOne","radarTwo","radarThree"];
                             success: function (data2) {
                                 console.log(data2);
                                 recentlyadded = {
-                                    song:elem.name,
-                                    artist:elem.artists[0].name,
+                                    Song:elem.name,
+                                    Artist:elem.artists[0].name,
                                     Valence: data2.audio_features[0].valence,
                                     Energy: data2.audio_features[0].energy
                                 };
@@ -704,20 +759,64 @@ var radarClasses = ["radarOne","radarTwo","radarThree"];
                 var listofalbums = data1.albums.items;
                 console.log(listofalbums);
                 $("#resultList").parent().removeClass("hidden");
-                listofalbums.forEach(function(elem){
+                listofalbums.forEach(function (elem) {
                     newobj = document.createElement("li");
                     newli = document.createElement("button");
-                    newli.innerHTML =  '<strong>'+elem.name+ '</strong>';
-                    $(newli).css("width","100%");
-                    $(newli).css("text-align","left");
-                    $(newli).css("border-bottom","solid black 1px");
-                    $(newli).css("padding","10px");
-                    $(newli).addClass("album");
+                    newli.innerHTML = '<strong>' + elem.name + '</strong>';
+                    $(newli).css("width", "100%");
+                    $(newli).css("text-align", "left");
+                    $(newli).css("border-bottom", "solid black 1px");
+                    $(newli).css("padding", "10px");
+                    $(newli).data("id", elem.id);
+                    $(newli).data("type", "song");
                     $(newli).addClass("btn btn-default");
+                    $(newli).click(function () {
+                        $.ajax({
+                            url: 'https://api.spotify.com/v1/albums/' + elem.id,
+                            type: 'GET',
+                            headers: {
+                                'Authorization': 'Authorization: Bearer ' + accessToken
+                            },
+                            success: function (data2) {
+                                console.log(data2);
+                                var albumsongs=[];
+                                var w=0;
+                                dataFinal=[];
+                                data2.tracks.items.forEach(function(elem){
+                                    albumsongs = albumsongs + elem.id + ",";
+                                });
+                                $.ajax({
+                                    url: 'https://api.spotify.com/v1/audio-features?ids='+albumsongs,
+                                    type: 'GET',
+                                    headers: {
+                                        'Authorization': 'Authorization: Bearer ' + accessToken
+                                    },
+                                    success: function (data3) {
+                                        console.log(data3);
+                                        data3.audio_features.forEach(function(elem1){
+                                            dataFinal.push({
+                                                Song: data2.tracks.items[w].name,
+                                                Artist: data2.tracks.items[w].artists[0].name,
+                                                Valence: elem1.valence,
+                                                Energy: elem1.energy
+                                            });
+                                            w++;
+                                        });
+                                        drawScatter(dataFinal);
+                                    }
+                                });
+
+                                //dataFinal.push(recentlyadded);
+                                //console.log(recentlyadded);
+
+
+                            }
+                        });
+
+                    });
+
                     $("#resultList").get(0).appendChild(newli);
                 });
-
-
             }
         });
 
@@ -734,13 +833,6 @@ var radarClasses = ["radarOne","radarTwo","radarThree"];
             $("#resultList").data("clicked",false);
     });
 
-    $("#resultList>li").click(function(){
-        if((this).data("type") == "song")
-        alert((this).data("id"));
-    });
-    $("#resultList > li.album").click(function(){
-        alert("album");
-    });
 </script>
 </body>
 </html>
