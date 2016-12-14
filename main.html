@@ -242,7 +242,7 @@
 
                         //playSound(data1.preview_url);
                         $("#r0audio").remove();
-                        $('body').append('<audio class="" id="r0audio" class="audioDemo" controls autoplay loop></audio>');
+                        $('body').append('<audio class="hidden" id="r0audio" class="audioDemo" controls autoplay loop></audio>');
                         $("#r0audio").get(0).crossOrigin = "anonymous";
                         $("#r0audio").append('<source id="songplaying" src="'+data1.preview_url+'" type="audio/mp3"></source>');
 
