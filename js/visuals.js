@@ -277,7 +277,7 @@ var renderers = {
                 .domain([0,300])
                 .range([$("#main").height(),0]);
             colorScale = d3.scale.linear()
-                .domain([0,500])
+                .domain([0,50])
                 .range([0,255]);
 
             width = config.width;
@@ -311,7 +311,9 @@ var renderers = {
                 .attr("class", "line")
                 .attr("d", line);
             path.style("fill","none")
-                .style("stroke", "steelblue")
+                .style("stroke", function(d,i){
+                    return "rgb("+(255-colorScale(x)>>0)+","+(colorScale(x)>>0)+",255)";
+                })
                 .style("stroke-width", 2)
                 .style("opacity","0.1");
                 a = (a+1)%frames;
@@ -548,6 +550,7 @@ var visualmusic = function(renderer){
         renderer = r;
     };
     this.isPlaying = function () {
+
         return running;
     };
     var renderFrame = function () {

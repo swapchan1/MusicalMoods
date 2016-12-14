@@ -31,9 +31,12 @@
         </div>
     </div>
     <div class="row" style="text-align: center; width: 40vw; margin: auto;margin-top: 20px;">
+        To Login to Spotify, Please use user name: <strong>oborgaon@umail.iu.edu </strong>, password: <strong>MusicalMoods</strong>
         <div class="btn-group" role="group" aria-label="Basic example">
+            <button id="login" class="btn btn-default">Login</button>
             <button id="songs" class="btn btn-default">Song Picker</button>
             <button id="docs" class="btn btn-default">Documentation</button>
+
         </div>
     </div>
 </div>
@@ -47,23 +50,22 @@
 
 <script src="https://rawgit.com/tpreusse/radar-chart-d3/master/src/radar-chart.js"></script>
 <script>
-    $(window).ready(function(){
+    $("#login").click(function(){
 
-        $.ajax({
+        /*$.ajax({
             //url: "http://api.musicmood.me/mood/" + encodeURIComponent("ADELE") + "/" + encodeURIComponent("HELLO") + "/",
-            url: "https://accounts.spotify.com/authorize?" +
-            "client_id=349dd71e60cf4393a120d49110919745" +
-            "&response_type=token" +
-            "&redirect_uri=https%3A%2F%2Fonkarborg.github.io%2FMusicalMoods%2Fmain.html",
+            url: "https://accounts.spotify.com/authorize?client_id=361a0568e6cf468e80186ea83ee6252f&redirect_uri=https://onkarborg.github.io/MusicalMoods/main.html&response_type=token&show_dialog=true",
             type: "GET",
+            //header: {'Authorization': btoa('Basic ' + '349dd71e60cf4393a120d49110919745' + ':' + 'e5e425ba612c4cc098c368eb0b634345')},
             success: function (data) {
-                console.log(data);
-                $.ajax({
+                window.location.href = data;
+                //$(window).load(data);
+                /*$.ajax({
                     //url: "http://api.musicmood.me/mood/" + encodeURIComponent("ADELE") + "/" + encodeURIComponent("HELLO") + "/",
                     url: "https://onkarborg.github.io/MusicalMoods/main.html",
                     type: "GET",
                     headers: {
-                        'Authorization': 'Basic ' + '349dd71e60cf4393a120d49110919745' + ':' + 'e5e425ba612c4cc098c368eb0b634345'
+                        'Authorization': btoa('Basic ' + '349dd71e60cf4393a120d49110919745' + ':' + 'e5e425ba612c4cc098c368eb0b634345')
                     },
                     json: true,
                     success: function (data1) {
@@ -77,7 +79,8 @@
             error: function (errordata) {
                 console.log(errordata);
             }
-        });
+        });*/
+        window.location.href = "https://accounts.spotify.com/authorize?client_id=361a0568e6cf468e80186ea83ee6252f&redirect_uri=https://onkarborg.github.io/MusicalMoods/main.html&response_type=token&show_dialog=true";
     });
     $("#songs").click(function(){
         location.href='main.html';
