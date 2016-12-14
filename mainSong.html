@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://rawgit.com/tpreusse/radar-chart-d3/master/src/radar-chart.css">
+    <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+    <style>
+        .navbar li a {
+            padding: 20px 10px 15px 10px;
+            font-size: 18px;
+            display: block;
+            color: #337ab7;
+        }
+        .pull-left {
+            float: left!important;
+        }
+        h1 {
+            font-size: 23px;
+            color: #000;
+        }
+        .pull-right {
+            float: right!important;
+        }
+        .navbar ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        .navbar li {
+            display: inline-block;
+        }
+        .main text {
+            font: 10px sans-serif;
+        }
+
+        .axis line, .axis path {
+            shape-rendering: crispEdges;
+            stroke: black;
+            fill: none;
+        }
+
+        .tooltip{
+            background-color:#122b40;
+            border-radius: 3px;
+            color:white;
+        }
+        .radar-chart .area {
+            fill-opacity: 0.7;
+        }
+        .radar-chart.focus .area {
+            fill-opacity: 0.3;
+        }
+        .radar-chart.focus .area.focused {
+            fill-opacity: 0.9;
+        }
+        .area.germany, .germany .circle {
+            fill: #FFD700;
+            stroke: none;
+        }
+        .area.argentina, .argentina .circle {
+            fill: #ADD8E6;
+            stroke: none;
+        }
+        .wrapper {
+            position: relative;
+        }
+        .wrapper {
+            width: 960px;
+            margin: 0 auto;
+        }
+        #resultList > .song{
+
+        }
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row" style="text-align: center;border-bottom: 1px solid #999; margin-bottom: 1.5vh; padding-bottom: 3vh">
+        Musical Moods
+        <div class="navbar pull-right" style="margin-bottom: 0">
+            <ul>
+                <li><a href="index.html">Song Picker</a></li>
+                <li><a href="documentation.html">Documentation</a></li>
+
+            </ul>
+        </div>
+    </div>
+    <div class="row hidden"  >
+        <form  style="padding-top: 15px;">
+            <div class="input-group col-md-12 searchbar">
+                <input id="tracksearch" type="text" style="width: 33%;" class="form-control search" placeholder="Track">
+
+                <input id="artistsearch" type="text" style="width: 33%;" class="form-control search" placeholder="Artist">
+
+                <input id="albumsearch" type="text" style="width: 33%;" class="form-control search" placeholder="Album">
+
+            </div>
+        </form>
+
+    </div>
+    <div class="row">
+        <div class="hidden" style="width: 80%;border:solid black 1px; margin-top: 5px;padding:10px;">
+            <ul id="resultList" style="list-style-type: none;">
+
+            </ul>
+        </div>
+    </div>
+
+    <div class="row" style="height: 10vh;">
+        <div style="text-align: center;">
+            <h2>Play the song based on your mood</h2>
+        </div>
+    </div>
+</div>
+    <div style="height:65vh; border: solid black">
+        <div class="col-md-2" style="height: 100%">
+            <div class="col-md-2 svgOverlap one" id="one"style="width:100%; height: 25%; border: solid black 0.1px;background-color: white" ></div>
+            <div class="col-md-2 svgOverlap two" id="two"  style="width:100%; height: 25%; border: solid black 0.1px;background-color: white" ></div>
+            <div class="col-md-2 svgOverlap three" id="three" style="width:100%; height: 25%; border: solid black 0.1px;background-color: white" ></div>
+            <div class="col-md-2 svgOverlap four" id="four" style="width:100%; height: 25%; border: solid black 0.1px;background-color: white" ></div>
+        </div>
+        <div class="col-md-8" style="height:100%">
+            <svg id="main"></svg>
+
+        </div>
+        <div class="col-md-2" style="height:100%;text-align: center;">
+            <h3><p id="songName">Song (Artist)</p></h3>
+            <button class="btn btn-default">Play/Pause</button>
+            <button class="btn btn-default">Pick Another Song</button>
+            <!--<input id="compare" type="checkbox" data-toggle="toggle" data-on="Compare" data-off="Single" data-onstyle="success" data-offstyle="primary">-->
+
+            <!--<svg id="test2"></svg>-->
+
+        </div>
+    </div>
+<audio class="hidden" id="r0audio" class="audioDemo" controls >
+    <source src="7.mp3" type="audio/mpeg">
+    <source src="8.mp3" type="audio/mpeg">
+    <source src="6.mp3" type="audio/mpeg">
+    <source src="4.mp3" type="audio/mpeg">
+    <source src="3.mp3" type="audio/mpeg">
+    <source src="2.mp3" type="audio/mpeg">
+    <source src="1.mp3" type="audio/mpeg">
+    <source src="5.mp3" type="audio/mpeg">
+</audio>
+
+<script src="js/PapaParse-4.1.2/papaparse.min.js"></script>
+<script src="js/jquery-3.1.0.min.js"></script>
+<script src="js/d3.v3.min.js" charset="utf-8"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/visuals.js"></script>
+<script src="https://rawgit.com/tpreusse/radar-chart-d3/master/src/radar-chart.js"></script>
+<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+<script>
+    $(".search").focus(function(){
+        if($(this).get(0).id == "tracksearch")
+        {
+            $("#tracksearch").animate({width:"80%"},1000,function(){});
+            $("#artistsearch").animate({width:"10%"},1000,function(){});
+            $("#albumsearch").animate({width:"10%"},1000,function(){});
+        }else
+        if($(this).get(0).id == "albumsearch")
+        {
+            $("#tracksearch").animate({width:"10%"},1000,function(){});
+            $("#artistsearch").animate({width:"10%"},1000,function(){});
+            $("#albumsearch").animate({width:"80%"},1000,function(){});
+        }else
+        if($(this).get(0).id == "artistsearch")
+        {
+            $("#tracksearch").animate({width:"10%"},1000,function(){});
+            $("#artistsearch").animate({width:"80%"},1000,function(){});
+            $("#albumsearch").animate({width:"10%"},1000,function(){});
+        }
+
+    });
+
+</script>
+<script>
+    var select=0;
+    var dataFinal;
+    var clicked = "zero";
+    $(".svgOverlap1").click(function(){
+        if(clicked != "zero") {
+            if($(this).hasClass(clicked)){
+                clicked = "zero";
+                    $(this).css("background-color", "white");
+            }
+        }
+        else{
+            if($(this).hasClass("one")){
+                clicked = "one";
+                currentRenderer= renderers['bar'];
+                v.setRenderer(currentRenderer);
+            }
+            if($(this).hasClass("two1")){
+                clicked = "two";
+                currentRenderer= renderers['baranim'];
+                v.setRenderer(currentRenderer);
+            }
+            if($(this).hasClass("three")){
+                clicked = "three";
+                currentRenderer= renderers['circles'];
+                v.setRenderer(currentRenderer);
+            }
+            if($(this).hasClass("four")){
+                clicked = "four";
+                currentRenderer= renderers['dots'];
+                v.setRenderer(currentRenderer);
+            }
+            $(this).css("background-color", "gray");
+        }
+    });
+    $("#one").click(function(){
+        currentRenderer= renderers['bar'];
+        v.setRenderer(currentRenderer);
+        $("#one").css("background-color", "gray");
+        $("#two").css("background-color", "white");
+        $("#three").css("background-color", "white");
+        $("#four").css("background-color", "white");
+    });
+    $("#two").click(function(){
+        currentRenderer= renderers['baranim'];
+        v.setRenderer(currentRenderer);
+        $("#one").css("background-color", "white");
+        $("#two").css("background-color", "gray");
+        $("#three").css("background-color", "white");
+        $("#four").css("background-color", "white");
+    });
+    $("#three").click(function(){
+        currentRenderer= renderers['circles'];
+        v.setRenderer(currentRenderer);
+        $("#one").css("background-color", "white");
+        $("#two").css("background-color", "white");
+        $("#three").css("background-color", "gray");
+        $("#four").css("background-color", "white");
+    });
+    $("#four").click(function(){
+        currentRenderer= renderers['line'];
+        v.setRenderer(currentRenderer);
+        $("#one").css("background-color", "white");
+        $("#two").css("background-color", "white");
+        $("#three").css("background-color", "white");
+        $("#four").css("background-color", "gray");
+    });
+
+    $(window).ready(function(){
+
+            $("#main").css("margin-top", "20px");
+            $("#main").width($("#main").parent().width() - 20);
+            $("#main").height($("#main").parent().height() - 40);
+
+            v = new visualmusic(currentRenderer);
+            v.start();
+
+    });
+</script>
+<script>
+    var accessToken = "BQBECs6k8MVRW-4l-6PX5bNpPsMH4ynwdlKYBY4SUuYXJxI11u-hIzXx2y_Cu-Z9yPVnB-2AVCSOy8tF5-5i1Zc6psKLWnxVkbkaRsojcRE5DmfB7wpKHOglhoOIldx0i37tUXS86g"
+    $("#tracksearch").on("change",function() {
+        console.log($("#tracksearch").get(0).value);
+        $.ajax({
+            url: 'https://api.spotify.com/v1/search?type=track&limit=5&q=' + encodeURI($("#tracksearch").get(0).value),
+            type: 'GET',
+            headers: {
+                'Authorization': 'Authorization: Bearer ' + accessToken
+            },
+            success: function (data1) {
+                $("#ResultList").empty();
+                var listofsongs = data1.tracks.items;
+                //console.log(listofsongs);
+                $("#resultList").parent().removeClass("hidden");
+                listofsongs.forEach(function(elem){
+
+                    newli = document.createElement("li");
+                    //newli = newobj.createElement("button");
+                    newli.innerHTML =  '<strong>'+elem.name+ '</strong>' + ', ' + elem.artists[0].name;
+                    $(newli).css("width","100%");
+                    $(newli).css("text-align","left");
+                    $(newli).css("border-bottom","solid black 1px");
+                    $(newli).css("padding","10px");
+                    $(newli).addClass("song");
+                    $(newli).addClass("btn btn-default");
+                    $(newli).click(function(){alert("song");});
+                    $("#resultList").get(0).appendChild(newli);
+                });
+            }
+
+        });
+    });
+    $("#aristsearch").on("change",function(){
+        console.log($("#artistsearch").get(0).value);
+        $.ajax({
+            url: 'https://api.spotify.com/v1/search?type=track&limit=5&q=' + encodeURI($("#artistsearch").get(0).value),
+            type: 'GET',
+            headers: {
+                'Authorization': 'Authorization: Bearer ' + accessToken
+            },
+            success: function (data1) {
+                var listofsongs = data1.tracks.items;
+                console.log(listofsongs);
+                $("#resultList").parent().removeClass("hidden");
+                listofsongs.forEach(function(elem){
+
+                    newobj = document.createElement("li");
+                    newli = newobj.createElement("button");
+                    newli.innerHTML =  '<strong>'+elem.name+ '</strong>' + ', ' + elem.artists[0].name;
+                    //$(newli).css("width","100%");
+                    $(newli).css("text-align","left");
+                    $(newli).css("border-bottom","solid black 1px");
+                    $(newli).css("padding","10px");
+                    $(newli).addClass("song");
+                    $(newli).addClass("btn btn-default");
+
+                    $("#resultList").get(0).appendChild(newli);
+                });
+
+
+            }
+        });
+
+    });
+    $("#albumsearch").on("change",function(){
+        console.log($("#albumsearch").get(0).value);
+        $.ajax({
+            url: 'https://api.spotify.com/v1/search?type=album&limit=5&q=' + encodeURI($("#albumsearch").get(0).value),
+            type: 'GET',
+            headers: {
+                'Authorization': 'Authorization: Bearer ' + accessToken
+            },
+            success: function (data1) {
+                $("#resultList").empty();
+                var listofalbums = data1.albums.items;
+                //console.log(listofalbums);
+                $("#resultList").parent().removeClass("hidden");
+                listofalbums.forEach(function(elem){
+                    newobj = document.createElement("li");
+                    newli = document.createElement("button");
+                    newli.innerHTML =  '<strong>'+elem.name+ '</strong>';
+                    $(newli).css("width","100%");
+                    $(newli).css("text-align","left");
+                    $(newli).css("border-bottom","solid black 1px");
+                    $(newli).css("padding","10px");
+                    $(newli).addClass("album");
+                    $(newli).addClass("btn btn-default");
+                    $("#resultList").get(0).appendChild(newli);
+                });
+
+
+            }
+        });
+
+    });
+    $("#resultList").click(function(){
+        $(this).data("clicked",true);
+    });
+    $(window).click(function(){
+        if(!$("#resultList").data('clicked')) {
+            if (!$("#resultList").parent().hasClass("hidden")) {
+                $("#resultList").parent().addClass("hidden");
+            }
+        }else
+            $("#resultList").data("clicked",false);
+    });
+
+    $("#resultList > li.song").click(function(){
+        alert("song");
+    });
+    $("#resultList > li.album").click(function(){
+        alert("album");
+    });
+</script>
+</body>
+</html>

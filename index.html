@@ -43,14 +43,50 @@
 <script src="js/d3.v3.min.js" charset="utf-8"></script>
 <script src="js/bootstrap.min.js"></script>
 <script src="js/visuals.js"></script>
+
+
 <script src="https://rawgit.com/tpreusse/radar-chart-d3/master/src/radar-chart.js"></script>
 <script>
+    $(window).ready(function(){
+
+        $.ajax({
+            //url: "http://api.musicmood.me/mood/" + encodeURIComponent("ADELE") + "/" + encodeURIComponent("HELLO") + "/",
+            url: "https://accounts.spotify.com/authorize?" +
+            "client_id=349dd71e60cf4393a120d49110919745" +
+            "&response_type=token" +
+            "&redirect_uri=https%3A%2F%2Fonkarborg.github.io%2FMusicalMoods%2Fmain.html",
+            type: "GET",
+            success: function (data) {
+                console.log(data);
+                $.ajax({
+                    //url: "http://api.musicmood.me/mood/" + encodeURIComponent("ADELE") + "/" + encodeURIComponent("HELLO") + "/",
+                    url: "https://onkarborg.github.io/MusicalMoods/main.html",
+                    type: "GET",
+                    headers: {
+                        'Authorization': 'Basic ' + '349dd71e60cf4393a120d49110919745' + ':' + 'e5e425ba612c4cc098c368eb0b634345'
+                    },
+                    json: true,
+                    success: function (data1) {
+                        console.log(data1);
+                    },
+                    error: function (errordata) {
+                        console.log(errordata);
+                    }
+                });
+            },
+            error: function (errordata) {
+                console.log(errordata);
+            }
+        });
+    });
     $("#songs").click(function(){
         location.href='main.html';
     });
     $("#docs").click(function(){
         location.href='documentation.html';
     });
+
 </script>
+
 </body>
 </html>
