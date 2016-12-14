@@ -28,9 +28,13 @@ var renderers = {
                 .attr("class", "bar")
                 .attr("x", function(d,i) {
                     return barWidth*i })
-                .attr("y", function(d) { return yScale((255+d)>>0); })
-                .attr("width", barWidth-1)
-                .attr("height", function(d) { return height - yScale((255+d)>>0); })
+                .attr("y", function(d) {
+                    //console.log(yScale(d));
+                    return yScale(d); })
+                .attr("width", barWidth)
+                .attr("height", function(d) {
+                    //console.log(height - yScale(d));
+                    return height - yScale(d); })
                 .attr("rx",10)
                 .attr("ry",10)
                 .style("fill",function(d,i){
@@ -64,7 +68,7 @@ var renderers = {
         };
         var renderFrame = function(frequencyData){
             var svg = d3.select("#main");
-            svg.selectAll('g').remove();
+            //svg.selectAll('g').remove();
             var g=svg.append('g');
             //console.log("frequencyData:"+frequencyData);
 
@@ -79,6 +83,7 @@ var renderers = {
                 .attr("height", function(d) { return height - yScale((255+d)>>0); })
                 .attr("rx",10)
                 .attr("ry",10)
+                .style("opacity","0.1")
                 .style("fill",function(d,i){
                     return "rgb("+(255-colorScale(i)>>0)+","+(colorScale(i)>>0)+",255)";
                     //return "rgb("+(colorScale(d)>>0)+","+(255-(colorScale(d)>>0))+",255)";
@@ -144,7 +149,7 @@ var renderers = {
         a=(z+1)%frames;
         for(var x = 0;x<frames && a!=z;x++) {
             var g = svg.append('g')
-                .attr("transform", "translate("+(450-x*20)+","+(150+x*10)+")skewY(15)");
+                .attr("transform", "translate("+(380-x*20)+","+(x*8)+")skewY(15)");
 
             g.selectAll(".bar")
                 .data(data[a])
@@ -160,8 +165,6 @@ var renderers = {
                 .attr("height", function (d) {
                     return height - yScale(d);
                 })
-                .attr("rx", 10)
-                .attr("ry", 10)
                 .style("fill", function (d, i) {
                     //return "rgb(" + (255 - colorScale(d) >> 0) + "," + (colorScale(i) >> 0) + ",255)";
                     return "rgb(" + (255 - d) + "," + d + ",255)";
@@ -229,6 +232,7 @@ var renderers = {
             barWidth = (width / count) >> 0;
             height = config.height;
             initialized = true;
+
         };
         var renderFrame = function(frequencyData){
             var svg = d3.select("#main");
@@ -240,12 +244,15 @@ var renderers = {
                 .attr("class", "bar")
                 .attr("cx", function(d,i) {
                     return barWidth*i })
-                .attr("cy", function(d) { return yScale((255+d)>>0); })
-                .attr("r", 1)
+                .attr("cy", function(d) { return yScale(d); })
+                .attr("r", 5)
                 //.attr("height", function(d) { return height - yScale(d); })
                 //.attr("rx",10)
                 //.attr("ry",10)
-                .style("opacity","0.1")
+                .style("opacity",function(d,i){
+
+                    return "0.1";
+                })
                 .style("fill",function(d,i){
                     //return "rgb("+(255-(i*9))+","+(i*9)+",255)";
                     //return "rgb("+(colorScale(d)>>0)+","+(255-(colorScale(d)>>0))+",255)";
@@ -261,36 +268,55 @@ var renderers = {
         }
     })(),
     'line':(function(){
-        var yScale,count,width,barWidth,height,initialized,line;
+        var yScale,count,width,barWidth,height,initialized, z, a,line ;
+        var frames = 50;
+        var data= new Array(frames);
         var init = function(config){
+            count = config.count;
             yScale = d3.scale.linear()
                 .domain([0,300])
                 .range([$("#main").height(),0]);
             colorScale = d3.scale.linear()
                 .domain([0,500])
                 .range([0,255]);
-            count = config.count;
+
             width = config.width;
-            barWidth = (width / count) >> 0;
+            barWidth = config.width/count;
             height = config.height;
             initialized = true;
+            z=0;
+            a = 0;
+            for(var i=0;i<frames;i++) {
+                data[i] = new Array(32);
+                for (var j = 0; j < 32; j++)
+                    data[i][j] = 0;
+            }
             line = d3.svg.line()
                 .x(function(d,i) { return (i*barWidth); })
                 .y(function(d) { return yScale(d); });
         };
         var renderFrame = function(frequencyData){
+
             var svg = d3.select("#main");
             svg.selectAll('g').remove();
-            var g=svg.append('g');
+            for(var b = 0;b<32;b++){
+                data[z][b]=frequencyData[b];
+            }
+
+            a=(z+1)%frames;
+            for(var x = 0;x<frames && a!=z;x++) {
+                var g = svg.append('g')
             var path = g.append("path")
-                .datum(frequencyData)
+                .datum(data[a])
                 .attr("class", "line")
                 .attr("d", line);
             path.style("fill","none")
                 .style("stroke", "steelblue")
-                .style("stroke-width", 2);
-
-
+                .style("stroke-width", 2)
+                .style("opacity","0.1");
+                a = (a+1)%frames;
+            }
+            z = (z+1)%frames;
         };
         return {
             init: init,
@@ -361,7 +387,7 @@ var renderers = {
         var init = function(config){
             rScale = d3.scale.linear()
                 .domain([0,300])
-                .range([0,15]);
+                .range([0,5]);
             colorScale = d3.scale.linear()
                 .domain([0,500])
                 .range([0,255]);
@@ -378,10 +404,10 @@ var renderers = {
             g.selectAll(".circles")
                 .data(frequencyData)
                 .enter().append("circle")
-                .attr("cx", window.innerWidth/2)
-                .attr("cy", window.innerHeight/2)
+                .attr("cx", width/2)
+                .attr("cy", height/2)
                 .attr("r", function(d,i){
-                    return i*15;
+                    return i*10;
                 })
                 .style("fill",function(d,i){
                     return "none";
@@ -491,9 +517,9 @@ var visualmusic = function(renderer){
         source = audioCtx.createMediaElementSource(audio);
         source.connect(analyser);
         analyser.connect(audioCtx.destination);
-        analyser.fftSize = 2048;
-        //frequencyData = new Uint8Array(analyser.frequencyBinCount);
-        frequencyData = new Float32Array(analyser.frequencyBinCount);
+        analyser.fftSize = 64;
+        frequencyData = new Uint8Array(analyser.frequencyBinCount);
+        //frequencyData = new Float32Array(analyser.frequencyBinCount);
         //console.log("analyser.frequencyBinCount:"+analyser.frequencyBinCount);
         //console.log("frequencyData:"+frequencyData);
         renderer.init({
@@ -528,9 +554,9 @@ var visualmusic = function(renderer){
 
         //analyser.getFloatTimeDomainData(frequencyData);
 
-        analyser.getFloatFrequencyData(frequencyData);
+        //analyser.getFloatFrequencyData(frequencyData);
 
-        //analyser.getByteFrequencyData(frequencyData);
+        analyser.getByteFrequencyData(frequencyData);
 
         //analyser.getByteTimeDomainData(frequencyData);
         renderer.renderFrame(frequencyData);
@@ -545,14 +571,12 @@ var visualmusic = function(renderer){
 
 };
 var v;
-var currentRenderer = renderers['dots'];
-$(window).ready(function(){
-    //$("#main").width(window.innerWidth-10);
-    //$("#main").height(window.innerHeight-60) ;
+var currentRenderer = renderers['bar'];
 
-    //v = new visualmusic(currentRenderer);
-    //v.start();
+$(window).ready(function(){
+
 });
+
 /*$('#r0audio').click(function() {
     /*if (this.paused == false) {
      this.pause();
@@ -631,9 +655,6 @@ $("#nextbutton").click(function(){
     }
 
 });
-
-
-
 
 /*
 var accessId = '83c202cd-d755-442a-ae95-fd2368a044c7';
