@@ -56,12 +56,16 @@
         .radar-chart.focus .area.focused {
             fill-opacity: 0.9;
         }
-        .area.germany, .germany .circle {
+        .area.radarOne, .radarOne.circle {
             fill: #FFD700;
             stroke: none;
         }
-        .area.argentina, .argentina .circle {
+        .area.radarTwo, .radarTwo .circle {
             fill: #ADD8E6;
+            stroke: none;
+        }
+        .area.radarThree, .radarThree.circle {
+            fill: #ADD800;
             stroke: none;
         }
         .wrapper {
@@ -111,7 +115,15 @@
 
     <div class="row" style="height: 10vh;">
         <div style="text-align: center;">
-            <h2>Play the song based on your mood</h2>
+            <h2>Play the song based on your mood</h2><svg class="pull-right" width="300" height="60">
+            <rect class="hidden" x="10" y="0" height="10" width="10" fill="#FFD700" id="rect0"></rect>
+            <text class="hidden" x="35" y="10" id="song0"></text>
+            <rect class="hidden" x="10" y="20" height="10" width="10" fill="#ADD8E6" id="rect1"></rect>
+            <text class="hidden" x="35" y="30" id="song1"></text>
+            <rect class="hidden" x="10" y="40" height="10" width="10" fill="#ADD800" id="rect2"></rect>
+            <text class="hidden" x="35" y="50" id="song2"></text>
+
+        </svg>
         </div>
     </div>
 </div>
@@ -393,7 +405,21 @@
                 .attr('class', 'main axis ')
                 .call(yAxis);
 
+        main.append("text")
+                .attr("class", "x label")
+                .attr("text-anchor", "end")
+                .attr("x", width - 10 )
+                .attr("y", height/2 - 6)
+                .text("Valence");
 
+        main.append("text")
+                .attr("class", "y label")
+                .attr("text-anchor", "end")
+                .attr("y", width/2 +6)
+                .attr("x", 15)
+                .attr("dy", ".75em")
+                .attr("transform", "rotate(-90)")
+                .text("Energy");
 
         main.selectAll("scatter-dots")
                 .data(dataFinal)
@@ -413,27 +439,27 @@
                     }
                     if(select == 1){
                         if(d.Valence < 0.5 && d.Energy > 0.5){
-                            return "red";
+                            return "#FF0F5F";
                         }
                     }
 
                     if(select == 2){
                         if(d.Valence > 0.5 && d.Energy > 0.5){
-                            return "green";
+                            return "#E1FF4D";
                         }
                     }
                     if(select == 3){
                         if(d.Valence > 0.5 && d.Energy < 0.5){
-                            return "blue";
+                            return "#6DFF6A";
                         }
                     }
                     if(select == 4){
                         if(d.Valence < 0.5 && d.Energy < 0.5){
-                            return "yellow";
+                            return "#4de1ff";
                         }
                     }
 
-                    return "steelblue";
+                    return "#C34DFF";
                 })
                 .style("stroke",function(d){
                     dataRadar.forEach(function(elem){
@@ -484,8 +510,12 @@
                                     var n = Math.sqrt(Math.pow(Math.abs(elem[1] - d.Valence), 2) + Math.pow(Math.abs(elem[2] - d.Energy), 2));
                                     c.push(1 - n);
                                 });
+                                $("#song"+dataRadar.length).get(0).innerHTML = d.Song;
+                                d3.select("#song"+dataRadar.length).classed("hidden",false);
+                                d3.select("#rect"+dataRadar.length).classed("hidden",false);
+
                                 dataRadar.push({
-                                    className: d.Song,
+                                    className:"radarOne",
                                     axes: [
                                         {axis: "Happy", value: c[0]},
                                         {axis: "Satisfied", value: c[1]},
@@ -507,8 +537,12 @@
                                 var n = Math.sqrt(Math.pow(Math.abs(elem[1] - d.Valence), 2) + Math.pow(Math.abs(elem[2] - d.Energy), 2));
                                 c.push(1 - n);
                             });
+                            $("#song"+dataRadar.length).get(0).innerHTML = d.Song;
+                            d3.select("#song"+dataRadar.length).classed("hidden",false);
+                            d3.select("#rect"+dataRadar.length).classed("hidden",false);
+
                             dataRadar.push({
-                                className: d.Song,
+                                className: radarClasses[dataRadar.length],
                                 axes: [
                                     {axis: "Happy", value: c[0]},
                                     {axis: "Satisfied", value: c[1]},
@@ -525,7 +559,7 @@
                     }
                 });
     };
-
+var radarClasses = ["radarOne","radarTwo","radarThree"];
     var moods=[
         ["Happy",(0.9+1)/2,(0.15+1)/2,"blue"],
         ["Satisfied",(0.76+1)/2,(-0.63+1)/2,"lightblue"],
